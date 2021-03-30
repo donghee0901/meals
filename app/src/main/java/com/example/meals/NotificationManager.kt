@@ -14,7 +14,11 @@ import java.util.*
 
 object NotificationManager {
     const val NOTIFICATION_CHANNEL_ID = "10001"
-    fun MakeNotification(context : Context, meals : MealsData, intent: Intent){
+    fun MakeNotification(context : Context, meals : Data?, intent: Intent){
+        if(meals == null){
+            NotificationSomething(context, "오류", "급식을 가져오던중 오류가 발생했습니다.\n", intent)
+            return
+        }
         val localHour : Int = LocalDateTime.now().hour
         if(localHour <= 7 || localHour >= 19){
             NotificationSomething(context, "아침", meals.breakfast, intent)

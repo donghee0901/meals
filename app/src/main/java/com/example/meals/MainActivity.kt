@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private var alarmManager: AlarmManager? = null
     lateinit var retrofit : Retrofit
     lateinit var service : MealsService
+    var todayMealsData : Data? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -41,8 +42,7 @@ class MainActivity : AppCompatActivity() {
         retrofit = RetrofitClient.getInstance() //RetrofitClient에서 Instance를 가져옴 (이미 만들어져있다면 기존의 Instance를 가져오고, 없다면 새로 만든다)
         service = retrofit.create(MealsService::class.java) // Retrofit Instance를 MealsService를 통해 사용할 수 있게 함
 
-        var todayMealsData = MealsData()
-        getMeals(parseDate(selectDate), todayMealsData)
+        getMeals(parseDate(selectDate))
         setAlarm(this)
 
 
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun getMeals(selectDate : String, mealData : MealsData? = null){
+    fun getMeals(selectDate : String){
         service.getMeals(selectDate).enqueue(object : Callback<MealsData> { //MealsService에 있던 getMeals함수를 실행하여 결과를 받아왔을때 콜백을 통해 아래 함수 실행
             override fun onFailure(call: Call<MealsData>, t: Throwable) {
                 Toast.makeText(this@MainActivity, "급식을 불러오는데 실패했습니다. ${t.message}", Toast.LENGTH_LONG).show()
@@ -91,16 +91,14 @@ class MainActivity : AppCompatActivity() {
                 Log.d("Log", response.body().toString())
 
                 if(response.code()==200){ // 성공 200, 서버에 없으면 404, 서버가 오류 500, 내가 잘못주면(서버에서 막을때) 400
-                    response.body()?.let { meals ->
-                        breakfast.text = meals.breakfast
-                        lunch.text = meals.lunch
-                        dinner.text = meals.dinner
-                        date.text = meals.date
+                    if(todayMealsData == null) todayMealsData = Data()
 
-                        mealData?.breakfast = meals.breakfast
-                        mealData?.lunch = meals.lunch
-                        mealData?.dinner = meals.dinner
-                        mealData?.date = meals.date
+                    response.body()?.let { meals ->
+                        breakfast.text = meals.data.breakfast
+                        lunch.text = meals.data.lunch
+                        dinner.text = meals.data.dinner
+                        date.text = meals.data.date
+
                     } ?: run{
                         date.text = "급식"
                         breakfast.text = "불러오기"
@@ -116,7 +114,6 @@ class MainActivity : AppCompatActivity() {
                     dinner.text = "했어용"
                 }
             }
-
         })
     }
 }
