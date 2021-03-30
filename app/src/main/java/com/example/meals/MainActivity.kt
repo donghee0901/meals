@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d("Log", response.body().toString())
 
                 if(response.code()==200){ // 성공 200, 서버에 없으면 404, 서버가 오류 500, 내가 잘못주면(서버에서 막을때) 400
-                    if(todayMealsData == null) todayMealsData = Data()
+                    if(todayMealsData == null) todayMealsData = response.body()?.data
 
                     response.body()?.let { meals ->
                         breakfast.text = meals.data.breakfast
